@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>승우의 영단어 장</title>
+<title>나만의 영단어 장</title>
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -47,154 +47,9 @@
         font-size: 14px;
     }
 </style>
-<!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-<!-- Add Firebase products that you want to use -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
-<script>
-    // Your web app's Firebase configuration
-    var firebaseConfig = {
-        apiKey: "AIzaSyCRH2bxNjh_NbG1NSS1UojeaxR_Z84SYZk",
-  authDomain: "english-memo-d090e.firebaseapp.com",
-  projectId: "english-memo-d090e",
-  storageBucket: "english-memo-d090e.appspot.com",
-  messagingSenderId: "558537365085",
-  appId: "1:558537365085:web:f87c6f8a1077b62f459fb4",
-  measurementId: "G-NTLZE7ZDPG"
-    };
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-
-    var database = firebase.database();
-
-    // 단어를 추가합니다.
-    function addWord() {
-        var newWord = document.getElementById('newWord').value.trim();
-        var newMeaning = document.getElementById('newMeaning').value.trim();
-        var newExample = document.getElementById('newExample').value.trim();
-        
-        if (newWord && newMeaning) {
-            var currentDate = getCurrentDate();
-            var wordItem = {
-                date: currentDate,
-                word: newWord,
-                meaning: newMeaning,
-                example: newExample
-            };
-
-            // Firebase 데이터베이스에 저장
-            var newWordKey = database.ref().child('words').push().key;
-            var updates = {};
-            updates['/words/' + newWordKey] = wordItem;
-            database.ref().update(updates);
-            
-            document.getElementById('newWord').value = '';
-            document.getElementById('newMeaning').value = '';
-            document.getElementById('newExample').value = '';
-            
-            loadWords();
-        } else {
-            alert('영어 단어와 뜻을 입력하세요.');
-        }
-    }
-
-    // 저장된 단어 목록을 로드하여 테이블에 표시합니다.
-    function loadWords() {
-        database.ref('/words').once('value').then(function(snapshot) {
-            var wordsList = document.getElementById('words');
-            wordsList.innerHTML = '';
-
-            var words = snapshot.val();
-            var index = 1;
-            for (var key in words) {
-                var wordItem = words[key];
-                var row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${index}</td>
-                    <td>${wordItem.date}</td>
-                    <td>${wordItem.word}</td>
-                    <td>${wordItem.meaning}</td>
-                    <td>${wordItem.example || ''}</td>
-                    <td>
-                        <button onclick="editWord('${key}')">수정</button>
-                        <button onclick="deleteWord('${key}')">삭제</button>
-                    </td>
-                `;
-                wordsList.appendChild(row);
-                index++;
-            }
-        });
-    }
-
-    // 단어 수정 폼을 표시합니다.
-    function editWord(key) {
-        database.ref('/words/' + key).once('value').then(function(snapshot) {
-            var wordItem = snapshot.val();
-
-            document.getElementById('editIndex').value = key;
-            document.getElementById('editWordInput').value = wordItem.word;
-            document.getElementById('editMeaningInput').value = wordItem.meaning;
-            document.getElementById('editExampleInput').value = wordItem.example || '';
-
-            document.getElementById('addWord').style.display = 'none';
-            document.getElementById('editWord').style.display = 'block';
-        });
-    }
-
-    // 수정을 저장합니다.
-    function saveEditedWord() {
-        var key = document.getElementById('editIndex').value;
-        var editedWord = document.getElementById('editWordInput').value.trim();
-        var editedMeaning = document.getElementById('editMeaningInput').value.trim();
-        var editedExample = document.getElementById('editExampleInput').value.trim();
-
-        if (editedWord && editedMeaning) {
-            var updates = {
-                word: editedWord,
-                meaning: editedMeaning,
-                example: editedExample
-            };
-            database.ref('/words/' + key).update(updates);
-            cancelEdit();
-            loadWords();
-        } else {
-            alert('영어 단어와 뜻을 입력하세요.');
-        }
-    }
-
-    // 수정을 취소하고 추가 폼을 표시합니다.
-    function cancelEdit() {
-        document.getElementById('editWord').style.display = 'none';
-        document.getElementById('addWord').style.display = 'block';
-        document.getElementById('editIndex').value = '';
-        document.getElementById('editWordInput').value = '';
-        document.getElementById('editMeaningInput').value = '';
-        document.getElementById('editExampleInput').value = '';
-    }
-
-    // 단어를 삭제합니다.
-    function deleteWord(key) {
-        database.ref('/words/' + key).remove();
-        loadWords(); // 다시 로드하여 순번을 다시 매깁니다.
-    }
-
-    // 현재 날짜를 YYYY-MM-DD 형식으로 반환하는 함수
-    function getCurrentDate() {
-        var today = new Date();
-        var year = today.getFullYear();
-        var month = String(today.getMonth() + 1).padStart(2, '0');
-        var day = String(today.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
-
-    // 페이지 로드 시 저장된 단어 목록을 표시합니다.
-    document.addEventListener('DOMContentLoaded', function() {
-        loadWords();
-    });
-</script>
 </head>
 <body>
-    <h1>승우의 영단어 장</h1>
+    <h1>나만의 영단어 장</h1>
     <div id="wordList">
         <h2>저장된 단어 목록</h2>
         <table>
@@ -218,6 +73,7 @@
         <textarea id="newExample" rows="3" placeholder="예문 (선택적)"></textarea>
         <button onclick="addWord()">추가</button>
     </div>
+
     <div id="editWord" style="display: none;">
         <h2>단어 수정하기</h2>
         <input type="hidden" id="editIndex">
@@ -227,5 +83,126 @@
         <button onclick="saveEditedWord()">저장</button>
         <button onclick="cancelEdit()">취소</button>
     </div>
+
+    <script>
+        // 페이지 로드 시 저장된 단어 목록을 표시합니다.
+        document.addEventListener('DOMContentLoaded', function() {
+            loadWords();
+        });
+
+        // 단어를 추가합니다.
+        function addWord() {
+            var newWord = document.getElementById('newWord').value.trim();
+            var newMeaning = document.getElementById('newMeaning').value.trim();
+            var newExample = document.getElementById('newExample').value.trim();
+            
+            if (newWord && newMeaning) {
+                var currentDate = getCurrentDate();
+                var wordItem = {
+                    date: currentDate,
+                    word: newWord,
+                    meaning: newMeaning,
+                    example: newExample
+                };
+
+                var words = JSON.parse(localStorage.getItem('words')) || [];
+                words.push(wordItem);
+                localStorage.setItem('words', JSON.stringify(words));
+                
+                document.getElementById('newWord').value = '';
+                document.getElementById('newMeaning').value = '';
+                document.getElementById('newExample').value = '';
+                
+                loadWords();
+            } else {
+                alert('영어 단어와 뜻을 입력하세요.');
+            }
+        }
+
+        // 저장된 단어 목록을 로드하여 테이블에 표시합니다.
+        function loadWords() {
+            var words = JSON.parse(localStorage.getItem('words')) || [];
+            var wordsList = document.getElementById('words');
+            wordsList.innerHTML = '';
+
+            words.forEach(function(wordItem, index) {
+                var row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${wordItem.date}</td>
+                    <td>${wordItem.word}</td>
+                    <td>${wordItem.meaning}</td>
+                    <td>${wordItem.example || ''}</td>
+                    <td>
+                        <button onclick="editWord(${index})">수정</button>
+                        <button onclick="deleteWord(${index})">삭제</button>
+                    </td>
+                `;
+                wordsList.appendChild(row);
+            });
+        }
+
+        // 단어 수정 폼을 표시합니다.
+        function editWord(index) {
+            var words = JSON.parse(localStorage.getItem('words')) || [];
+            var wordItem = words[index];
+
+            document.getElementById('editIndex').value = index;
+            document.getElementById('editWordInput').value = wordItem.word;
+            document.getElementById('editMeaningInput').value = wordItem.meaning;
+            document.getElementById('editExampleInput').value = wordItem.example || '';
+
+            document.getElementById('addWord').style.display = 'none';
+            document.getElementById('editWord').style.display = 'block';
+        }
+
+        // 수정을 저장합니다.
+        function saveEditedWord() {
+            var index = document.getElementById('editIndex').value;
+            var editedWord = document.getElementById('editWordInput').value.trim();
+            var editedMeaning = document.getElementById('editMeaningInput').value.trim();
+            var editedExample = document.getElementById('editExampleInput').value.trim();
+
+            if (editedWord && editedMeaning) {
+                var words = JSON.parse(localStorage.getItem('words')) || [];
+                words[index].word = editedWord;
+                words[index].meaning = editedMeaning;
+                words[index].example = editedExample;
+
+                localStorage.setItem('words', JSON.stringify(words));
+                cancelEdit();
+                loadWords();
+            } else {
+                alert('영어 단어와 뜻을 입력하세요.');
+            }
+        }
+
+        // 수정을 취소하고 추가 폼을 표시합니다.
+        function cancelEdit() {
+            document.getElementById('editWord').style.display = 'none';
+            document.getElementById('addWord').style.display = 'block';
+            document.getElementById('editIndex').value = '';
+            document.getElementById('editWordInput').value = '';
+            document.getElementById('editMeaningInput').value = '';
+            document.getElementById('editExampleInput').value = '';
+        }
+
+        // 단어를 삭제합니다.
+        function deleteWord(index) {
+            var words = JSON.parse(localStorage.getItem('words')) || [];
+            words.splice(index, 1);
+            localStorage.setItem('words', JSON.stringify(words));
+            loadWords(); // 다시 로드하여 순번을 다시 매깁니다.
+        }
+
+        // 현재 날짜를 YYYY-MM-DD 형식으로 반환하는 함수
+        function getCurrentDate() {
+            var today = new Date();
+            var year = today.getFullYear();
+            var month = String(today.getMonth() + 1).padStart(2, '0');
+            var day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+    </script>
 </body>
 </html>
