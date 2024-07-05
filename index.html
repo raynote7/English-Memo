@@ -1,60 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>나만의 영단어 장</title>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-    h1, h2 {
-        text-align: center;
-    }
-    #wordList {
-        margin-top: 20px;
-    }
-    #wordList table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-    }
-    #wordList th, #wordList td {
-        padding: 10px;
-        border: 1px solid #ccc;
-        text-align: center; /* 가운데 정렬 */
-    }
-    #wordList th {
-        background-color: #f0f0f0; /* 첫 번째 행 배경색 회색으로 설정 */
-    }
-    #addWord, #editWord {
-        margin-top: 20px;
-    }
-    #addWord input, #addWord textarea,
-    #editWord input, #editWord textarea {
-        width: calc(50% - 5px);
-        padding: 8px;
-        margin-right: 5px;
-        margin-bottom: 10px;
-        border: 1px solid #ccc;
-        font-size: 14px;
-    }
-    #addWord button, #editWord button {
-        padding: 10px;
-        font-size: 14px;
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나만의 영단어 장</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        #addWord {
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #wordList {
+            margin-top: 30px;
+        }
+        #wordList table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        #wordList th, #wordList td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+        #wordList th {
+            background-color: #f0f0f0;
+        }
+        #addWord input, #addWord textarea,
+        #editWord input, #editWord textarea {
+            width: calc(50% - 5px);
+            padding: 8px;
+            margin-right: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+        #addWord button, #editWord button {
+            padding: 10px;
+            font-size: 14px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        #addWord button:hover, #editWord button:hover {
+            background-color: #45a049;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
     <h1>나만의 영단어 장</h1>
+
+    <div id="addWord">
+        <h2>단어 추가하기</h2>
+        <input type="text" id="newWord" placeholder="영어 단어">
+        <input type="text" id="newMeaning" placeholder="뜻">
+        <textarea id="newExample" rows="3" placeholder="예문 (선택적)"></textarea>
+        <button onclick="addWord()">추가</button>
+    </div>
+
     <div id="wordList">
         <h2>저장된 단어 목록</h2>
+        <button onclick="toggleMemorized()">암기 완료 단어 숨기기/보이기</button>
         <table>
             <thead>
                 <tr>
+                    <th>암기</th>
                     <th>No</th>
                     <th>날짜</th>
                     <th>영어 단어</th>
@@ -65,13 +91,6 @@
             </thead>
             <tbody id="words"></tbody>
         </table>
-    </div>
-    <div id="addWord">
-        <h2>단어 추가하기</h2>
-        <input type="text" id="newWord" placeholder="영어 단어">
-        <input type="text" id="newMeaning" placeholder="뜻">
-        <textarea id="newExample" rows="3" placeholder="예문 (선택적)"></textarea>
-        <button onclick="addWord()">추가</button>
     </div>
 
     <div id="editWord" style="display: none;">
@@ -85,12 +104,10 @@
     </div>
 
     <script>
-        // 페이지 로드 시 저장된 단어 목록을 표시합니다.
         document.addEventListener('DOMContentLoaded', function() {
             loadWords();
         });
 
-        // 단어를 추가합니다.
         function addWord() {
             var newWord = document.getElementById('newWord').value.trim();
             var newMeaning = document.getElementById('newMeaning').value.trim();
@@ -102,7 +119,8 @@
                     date: currentDate,
                     word: newWord,
                     meaning: newMeaning,
-                    example: newExample
+                    example: newExample,
+                    memorized: false
                 };
 
                 var words = JSON.parse(localStorage.getItem('words')) || [];
@@ -119,7 +137,6 @@
             }
         }
 
-        // 저장된 단어 목록을 로드하여 테이블에 표시합니다.
         function loadWords() {
             var words = JSON.parse(localStorage.getItem('words')) || [];
             var wordsList = document.getElementById('words');
@@ -127,7 +144,9 @@
 
             words.forEach(function(wordItem, index) {
                 var row = document.createElement('tr');
+                row.className = wordItem.memorized ? 'memorized hidden' : '';
                 row.innerHTML = `
+                    <td><input type="checkbox" ${wordItem.memorized ? 'checked' : ''} onclick="toggleMemorizedStatus(${index})"></td>
                     <td>${index + 1}</td>
                     <td>${wordItem.date}</td>
                     <td>${wordItem.word}</td>
@@ -142,7 +161,6 @@
             });
         }
 
-        // 단어 수정 폼을 표시합니다.
         function editWord(index) {
             var words = JSON.parse(localStorage.getItem('words')) || [];
             var wordItem = words[index];
@@ -156,7 +174,6 @@
             document.getElementById('editWord').style.display = 'block';
         }
 
-        // 수정을 저장합니다.
         function saveEditedWord() {
             var index = document.getElementById('editIndex').value;
             var editedWord = document.getElementById('editWordInput').value.trim();
@@ -177,7 +194,6 @@
             }
         }
 
-        // 수정을 취소하고 추가 폼을 표시합니다.
         function cancelEdit() {
             document.getElementById('editWord').style.display = 'none';
             document.getElementById('addWord').style.display = 'block';
@@ -187,21 +203,33 @@
             document.getElementById('editExampleInput').value = '';
         }
 
-        // 단어를 삭제합니다.
         function deleteWord(index) {
             var words = JSON.parse(localStorage.getItem('words')) || [];
             words.splice(index, 1);
             localStorage.setItem('words', JSON.stringify(words));
-            loadWords(); // 다시 로드하여 순번을 다시 매깁니다.
+            loadWords(); 
         }
 
-        // 현재 날짜를 YYYY-MM-DD 형식으로 반환하는 함수
         function getCurrentDate() {
             var today = new Date();
             var year = today.getFullYear();
             var month = String(today.getMonth() + 1).padStart(2, '0');
             var day = String(today.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
+        }
+
+        function toggleMemorizedStatus(index) {
+            var words = JSON.parse(localStorage.getItem('words')) || [];
+            words[index].memorized = !words[index].memorized;
+            localStorage.setItem('words', JSON.stringify(words));
+            loadWords();
+        }
+
+        function toggleMemorized() {
+            var rows = document.querySelectorAll('tr.memorized');
+            rows.forEach(row => {
+                row.classList.toggle('hidden');
+            });
         }
     </script>
 </body>
