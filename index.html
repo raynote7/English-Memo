@@ -232,5 +232,138 @@
             });
         }
     </script>
+   <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+    import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAr2QEeqVDpfJdmSBnC5a_mO1qMpoC9cec",
+        authDomain: "english-test-f4df6.firebaseapp.com",
+        projectId: "english-test-f4df6",
+        storageBucket: "english-test-f4df6.appspot.com",
+        messagingSenderId: "30084236062",
+        appId: "1:30084236062:web:58d1ce54213de789c73f0f",
+        measurementId: "G-KY6RH80E4X",
+        databaseURL: "https://english-test-f4df6-default-rtdb.firebaseio.com/" // 이 줄을 추가하세요
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    const wordsRef = ref(database, 'words');
+
+    // Firebase 함수들
+    function addWord() {
+        var newWord = document.getElementById('newWord').value.trim();
+        var newMeaning = document.getElementById('newMeaning').value.trim();
+        var newExample = document.getElementById('newExample').value.trim();
+        
+        if (newWord && newMeaning) {
+            var currentDate = getCurrentDate();
+            var wordItem = {
+                date: currentDate,
+                word: newWord,
+                meaning: newMeaning,
+                example: newExample,
+                memorized: false
+            };
+
+            push(wordsRef, wordItem);
+            
+            document.getElementById('newWord').value = '';
+            document.getElementById('newMeaning').value = '';
+            document.getElementById('newExample').value = '';
+        } else {
+            alert('영어 단어와 뜻을 입력하세요.');
+        }
+    }
+
+    function loadWords() {
+        onValue(wordsRef, (snapshot) => {
+            var wordsList = document.getElementById('words');
+            wordsList.innerHTML = '';
+
+            snapshot.forEach((childSnapshot) => {
+                var wordItem = childSnapshot.val();
+                var key = childSnapshot.key;
+                var row = document.createElement('tr');
+                row.className = wordItem.memorized ? 'memorized hidden' : '';
+                row.innerHTML = `
+                    <td><input type="checkbox" ${wordItem.memorized ? 'checked' : ''} onclick="toggleMemorizedStatus('${key}')"></td>
+                    <td>${wordItem.date}</td>
+                    <td>${wordItem.word}</td>
+                    <td>${wordItem.meaning}</td>
+                    <td>${wordItem.example || ''}</td>
+                    <td>
+                        <button onclick="editWord('${key}')">수정</button>
+                        <button onclick="deleteWord('${key}')">삭제</button>
+                    </td>
+                `;
+                wordsList.appendChild(row);
+            });
+        });
+    }
+
+    function editWord(key) {
+        const wordRef = ref(database, `words/${key}`);
+        onValue(wordRef, (snapshot) => {
+            const wordItem = snapshot.val();
+            document.getElementById('editIndex').value = key;
+            document.getElementById('editWordInput').value = wordItem.word;
+            document.getElementById('editMeaningInput').value = wordItem.meaning;
+            document.getElementById('editExampleInput').value = wordItem.example || '';
+
+            document.getElementById('addWord').style.display = 'none';
+            document.getElementById('editWord').style.display = 'block';
+        }, { onlyOnce: true });
+    }
+
+    function saveEditedWord() {
+        var key = document.getElementById('editIndex').value;
+        var editedWord = document.getElementById('editWordInput').value.trim();
+        var editedMeaning = document.getElementById('editMeaningInput').value.trim();
+        var editedExample = document.getElementById('editExampleInput').value.trim();
+
+        if (editedWord && editedMeaning) {
+            const wordRef = ref(database, `words/${key}`);
+            set(wordRef, {
+                word: editedWord,
+                meaning: editedMeaning,
+                example: editedExample,
+                date: getCurrentDate(),
+                memorized: false
+            });
+            cancelEdit();
+        } else {
+            alert('영어 단어와 뜻을 입력하세요.');
+        }
+    }
+
+    function deleteWord(key) {
+        const wordRef = ref(database, `words/${key}`);
+        remove(wordRef);
+    }
+
+    function toggleMemorizedStatus(key) {
+        const wordRef = ref(database, `words/${key}`);
+        onValue(wordRef, (snapshot) => {
+            const wordItem = snapshot.val();
+            set(wordRef, { ...wordItem, memorized: !wordItem.memorized });
+        }, { onlyOnce: true });
+    }
+
+    // 기존 함수들 (getCurrentDate, cancelEdit, toggleMemorized)는 그대로 유지
+
+    // 페이지 로드 시 단어 목록 불러오기
+    document.addEventListener('DOMContentLoaded', loadWords);
+
+    // 전역 스코프에서 함수 사용 가능하도록 설정
+    window.addWord = addWord;
+    window.editWord = editWord;
+    window.saveEditedWord = saveEditedWord;
+    window.deleteWord = deleteWord;
+    window.toggleMemorizedStatus = toggleMemorizedStatus;
+    window.cancelEdit = cancelEdit;
+    window.toggleMemorized = toggleMemorized;
+</script>
 </body>
 </html>
