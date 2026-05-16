@@ -1,107 +1,338 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>나만의 영단어 장</title>
+    <title>나만의 영단어장</title>
     <style>
+        :root {
+            --bg: #f6f7fb;
+            --surface: #ffffff;
+            --surface-soft: #f9fafc;
+            --text: #172033;
+            --muted: #677084;
+            --line: #dfe4ee;
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --danger: #dc2626;
+            --danger-dark: #b91c1c;
+            --success: #16a34a;
+            --shadow: 0 18px 45px rgba(23, 32, 51, 0.1);
+            --radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
+            min-height: 100vh;
+            margin: 0;
+            padding: 32px 18px;
+            background:
+                linear-gradient(180deg, rgba(37, 99, 235, 0.08), rgba(37, 99, 235, 0) 260px),
+                var(--bg);
+            color: var(--text);
+            font-family: Arial, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+        }
+
+        main {
+            width: min(1040px, 100%);
             margin: 0 auto;
-            padding: 20px;
         }
-        h1, h2 {
-            text-align: center;
+
+        .app-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 22px;
         }
-        #addWord {
-            margin-top: 20px;
-            background-color: #f9f9f9;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+        .app-title {
+            margin: 0;
+            font-size: clamp(28px, 5vw, 44px);
+            line-height: 1.1;
+            letter-spacing: 0;
         }
-        #wordList {
-            margin-top: 30px;
+
+        .app-subtitle {
+            margin: 10px 0 0;
+            color: var(--muted);
+            font-size: 15px;
         }
-        #wordList table {
+
+        .panel {
+            margin-top: 18px;
+            padding: 22px;
+            background: var(--surface);
+            border: 1px solid rgba(223, 228, 238, 0.9);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 20px;
+            letter-spacing: 0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .form-grid textarea {
+            grid-column: 1 / -1;
+            min-height: 92px;
+            resize: vertical;
+        }
+
+        input,
+        textarea {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
+            padding: 12px 13px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: var(--surface-soft);
+            color: var(--text);
+            font: inherit;
+            outline: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
         }
-        #wordList th, #wordList td {
-            padding: 10px;
-            border: 1px solid #ccc;
-            text-align: center;
+
+        input:focus,
+        textarea:focus {
+            border-color: var(--primary);
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
         }
-        #wordList th {
-            background-color: #f0f0f0;
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
         }
-        #addWord input, #addWord textarea,
-        #editWord input, #editWord textarea {
-            width: calc(50% - 5px);
-            padding: 8px;
-            margin-right: 5px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            font-size: 14px;
-        }
-        #addWord button, #editWord button {
-            padding: 10px;
-            font-size: 14px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
+
+        button {
+            min-height: 40px;
+            padding: 0 14px;
+            border: 0;
+            border-radius: 6px;
+            background: var(--primary);
+            color: #ffffff;
+            font: inherit;
+            font-weight: 700;
             cursor: pointer;
-            border-radius: 4px;
+            transition: transform 0.12s ease, background-color 0.12s ease, box-shadow 0.12s ease;
         }
-        #addWord button:hover, #editWord button:hover {
-            background-color: #45a049;
+
+        button:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.18);
+            transform: translateY(-1px);
         }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .secondary-button {
+            background: #eef2ff;
+            color: #1e3a8a;
+        }
+
+        .secondary-button:hover {
+            background: #dbeafe;
+            box-shadow: none;
+        }
+
+        .danger-button {
+            background: var(--danger);
+        }
+
+        .danger-button:hover {
+            background: var(--danger-dark);
+            box-shadow: 0 8px 18px rgba(220, 38, 38, 0.18);
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+        }
+
+        table {
+            width: 100%;
+            min-width: 820px;
+            border-collapse: collapse;
+            background: var(--surface);
+        }
+
+        th,
+        td {
+            padding: 13px 12px;
+            border-bottom: 1px solid var(--line);
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        th {
+            background: #f1f5f9;
+            color: #334155;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        td {
+            color: #263246;
+            font-size: 14px;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        tbody tr:hover {
+            background: #f8fbff;
+        }
+
+        tbody tr.memorized td {
+            color: var(--muted);
+            background: #f7f8fa;
+            text-decoration: line-through;
+        }
+
+        .empty-row td {
+            padding: 34px 12px;
+            color: var(--muted);
+            text-decoration: none;
+        }
+
+        .row-actions {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .row-actions button {
+            min-height: 34px;
+            padding: 0 10px;
+            font-size: 13px;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--success);
+            cursor: pointer;
+        }
+
         .hidden {
             display: none;
+        }
+
+        @media (max-width: 720px) {
+            body {
+                padding: 22px 12px;
+            }
+
+            .app-header,
+            .panel-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .panel {
+                padding: 18px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .row-actions {
+                min-width: 132px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>나만의 영단어 장</h1>
+    <main>
+        <header class="app-header">
+            <div>
+                <h1 class="app-title">나만의 영단어장</h1>
+                <p class="app-subtitle">새 단어를 기록하고 외운 단어를 체크하세요.</p>
+            </div>
+        </header>
 
-    <div id="addWord">
-        <h2>단어 추가하기</h2>
-        <input type="text" id="newWord" placeholder="영어 단어">
-        <input type="text" id="newMeaning" placeholder="뜻">
-        <textarea id="newExample" rows="3" placeholder="예문 (선택적)"></textarea>
-        <button onclick="addWord()">추가</button>
-    </div>
+        <section id="addWord" class="panel">
+            <div class="panel-header">
+                <h2>단어 추가</h2>
+            </div>
+            <div class="form-grid">
+                <input type="text" id="newWord" placeholder="영어 단어">
+                <input type="text" id="newMeaning" placeholder="뜻">
+                <textarea id="newExample" rows="3" placeholder="예문 선택 입력"></textarea>
+            </div>
+            <div class="actions">
+                <button onclick="addWord()">추가</button>
+            </div>
+        </section>
 
-    <div id="wordList">
-        <h2>저장된 단어 목록</h2>
-        <button onclick="toggleMemorized()">암기 완료 단어 숨기기/보이기</button>
-        <table>
-            <thead>
-                <tr>
-                    <th>암기</th>
-                    <th>No</th>
-                    <th>날짜</th>
-                    <th>영어 단어</th>
-                    <th>뜻</th>
-                    <th>예문</th>
-                    <th>작업</th>
-                </tr>
-            </thead>
-            <tbody id="words"></tbody>
-        </table>
-    </div>
+        <section id="editWord" class="panel" style="display: none;">
+            <div class="panel-header">
+                <h2>단어 수정</h2>
+            </div>
+            <input type="hidden" id="editIndex">
+            <div class="form-grid">
+                <input type="text" id="editWordInput" placeholder="영어 단어">
+                <input type="text" id="editMeaningInput" placeholder="뜻">
+                <textarea id="editExampleInput" rows="3" placeholder="예문 선택 입력"></textarea>
+            </div>
+            <div class="actions">
+                <button onclick="saveEditedWord()">저장</button>
+                <button class="secondary-button" onclick="cancelEdit()">취소</button>
+            </div>
+        </section>
 
-    <div id="editWord" style="display: none;">
-        <h2>단어 수정하기</h2>
-        <input type="hidden" id="editIndex">
-        <input type="text" id="editWordInput" placeholder="영어 단어">
-        <input type="text" id="editMeaningInput" placeholder="뜻">
-        <textarea id="editExampleInput" rows="3" placeholder="예문 (선택적)"></textarea>
-        <button onclick="saveEditedWord()">저장</button>
-        <button onclick="cancelEdit()">취소</button>
-    </div>
+        <section id="wordList" class="panel">
+            <div class="panel-header">
+                <h2>저장된 단어 목록</h2>
+                <button class="secondary-button" onclick="toggleMemorized()">외운 단어 보이기/숨기기</button>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>외움</th>
+                            <th>No</th>
+                            <th>날짜</th>
+                            <th>영어 단어</th>
+                            <th>뜻</th>
+                            <th>예문</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody id="words"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
@@ -126,7 +357,7 @@
             var newWord = document.getElementById('newWord').value.trim();
             var newMeaning = document.getElementById('newMeaning').value.trim();
             var newExample = document.getElementById('newExample').value.trim();
-            
+
             if (newWord && newMeaning) {
                 var currentDate = getCurrentDate();
                 var wordItem = {
@@ -138,7 +369,7 @@
                 };
 
                 push(wordsRef, wordItem);
-                
+
                 document.getElementById('newWord').value = '';
                 document.getElementById('newMeaning').value = '';
                 document.getElementById('newExample').value = '';
@@ -152,6 +383,15 @@
                 var wordsList = document.getElementById('words');
                 wordsList.innerHTML = '';
 
+                if (!snapshot.exists()) {
+                    wordsList.innerHTML = `
+                        <tr class="empty-row">
+                            <td colspan="7">아직 저장된 단어가 없습니다.</td>
+                        </tr>
+                    `;
+                    return;
+                }
+
                 let index = 1;
                 snapshot.forEach((childSnapshot) => {
                     var wordItem = childSnapshot.val();
@@ -161,19 +401,30 @@
                     row.innerHTML = `
                         <td><input type="checkbox" ${wordItem.memorized ? 'checked' : ''} onclick="toggleMemorizedStatus('${key}')"></td>
                         <td>${index}</td>
-                        <td>${wordItem.date}</td>
-                        <td>${wordItem.word}</td>
-                        <td>${wordItem.meaning}</td>
-                        <td>${wordItem.example || ''}</td>
+                        <td>${escapeHtml(wordItem.date)}</td>
+                        <td>${escapeHtml(wordItem.word)}</td>
+                        <td>${escapeHtml(wordItem.meaning)}</td>
+                        <td>${escapeHtml(wordItem.example || '')}</td>
                         <td>
-                            <button onclick="editWord('${key}')">수정</button>
-                            <button onclick="deleteWord('${key}')">삭제</button>
+                            <div class="row-actions">
+                                <button class="secondary-button" onclick="editWord('${key}')">수정</button>
+                                <button class="danger-button" onclick="deleteWord('${key}')">삭제</button>
+                            </div>
                         </td>
                     `;
                     wordsList.appendChild(row);
                     index++;
                 });
             });
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
         }
 
         function editWord(key) {
@@ -248,10 +499,8 @@
             });
         }
 
-        // 페이지 로드 시 단어 목록 불러오기
         document.addEventListener('DOMContentLoaded', loadWords);
 
-        // 전역 스코프에서 함수 사용 가능하도록 설정
         window.addWord = addWord;
         window.editWord = editWord;
         window.saveEditedWord = saveEditedWord;
